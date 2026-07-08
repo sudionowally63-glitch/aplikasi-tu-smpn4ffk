@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { 
   Settings, Image, Save, Trash2, ShieldAlert, CheckCircle, RefreshCw
 } from "lucide-react";
@@ -21,6 +21,11 @@ interface PengaturanViewProps {
 export default function PengaturanView({ settings, setSettings, onWipeData }: PengaturanViewProps) {
   const [form, setForm] = useState<Setting>({ ...settings });
   const [saveSuccess, setSaveSuccess] = useState(false);
+
+  // Update form if settings prop changes
+  useEffect(() => {
+    setForm({ ...settings });
+  }, [settings]);
 
   // Wipe selections state
   const [wipeTargets, setWipeTargets] = useState({
