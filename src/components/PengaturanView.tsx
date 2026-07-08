@@ -42,28 +42,57 @@ export default function PengaturanView({ settings, setSettings, onWipeData }: Pe
   const [confirmText, setConfirmText] = useState("");
   const [wipeSuccess, setWipeSuccess] = useState(false);
 
-  // Base64 logo conversion
+  // Base64 logo conversion with compression
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setForm(prev => ({ ...prev, kopSekolah: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+      compressImage(file, (compressedDataUrl) => {
+        setForm(prev => ({ ...prev, kopSekolah: compressedDataUrl }));
+      });
     }
   };
 
-  // Base64 logo sekolah conversion for Login & Sidebar
+  // Base64 logo sekolah conversion for Login & Sidebar with compression
   const handleLogoSekolahUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setForm(prev => ({ ...prev, logoSekolah: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+      compressImage(file, (compressedDataUrl) => {
+        setForm(prev => ({ ...prev, logoSekolah: compressedDataUrl }));
+      });
     }
+  };
+
+  const compressImage = (file: File, callback: (dataUrl: string) => void) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX_WIDTH = 400;
+        const MAX_HEIGHT = 400;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, width, height);
+        callback(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.src = event.target?.result as string;
+    };
+    reader.readAsDataURL(file);
   };
 
   const handleSaveSettings = (e: React.FormEvent) => {

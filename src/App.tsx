@@ -170,7 +170,8 @@ export default function App() {
   }, [users]);
 
   useEffect(() => {
-    setDoc(doc(db, "data", "settings"), { value: settings });
+    setDoc(doc(db, "data", "settings"), { value: settings })
+      .catch(err => console.error("Error saving settings:", err));
   }, [settings]);
 
   // LOGIN EXECUTION
