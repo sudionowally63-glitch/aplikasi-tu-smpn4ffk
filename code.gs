@@ -1,27 +1,64 @@
-/**
- * Google Apps Script untuk menyimpan data ke Google Sheet.
- * 
- * 1. Buat Google Sheet baru.
- * 2. Klik Extensions > Apps Script.
- * 3. Copy kode ini ke editor Apps Script.
- * 4. Deploy sebagai Web App (Execute as: Me, Who has access: Anyone).
- */
+function doGet(e) {
+  try {
+    var key = e.parameter.key;
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName("Database") || ss.insertSheet("Database");
+    var data = sheet.getDataRange().getValues();
+    
+    var obj = {};
+    for (var i = 0; i < data.length; i++) {
+      if (data[i][0]) {
+        try {
+          obj[data[i][0]] = JSON.parse(data[i][1]);
+        } catch(err) {
+          obj[data[i][0]] = data[i][1];
+        }
+      }
+    }
+
+    if (key) {
+      return ContentService.createTextOutput(JSON.stringify({value: obj[key] !== undefined ? obj[key] : null}))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify(obj))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({error: err.toString()}))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
 
 function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var key = data.key;
+    var value = typeof data.value === 'string' ? data.value : JSON.stringify(data.value);
     
-    // Asumsi: data berupa objek dengan key dan value
-    // Contoh: { "siswa": [...data...] }
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName("Database") || ss.insertSheet("Database");
+    var range = sheet.getDataRange();
+    var values = range.getValues();
     
-    var timestamp = new Date();
-    sheet.appendRow([timestamp, data.key, JSON.stringify(data.value)]);
+    var found = false;
+    for (var i = 0; i < values.length; i++) {
+      if (values[i][0] === key) {
+        sheet.getRange(i + 1, 2).setValue(value);
+        found = true;
+        break;
+      }
+    }
     
-    return ContentService.createTextOutput(JSON.stringify({ "status": "success" }))
+    if (!found) {
+      sheet.appendRow([key, value]);
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify({status: "success"}))
       .setMimeType(ContentService.MimeType.JSON);
-  } catch (error) {
-    return ContentService.createTextOutput(JSON.stringify({ "status": "error", "message": error.toString() }))
+      
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({error: err.toString(), status: "error"}))
       .setMimeType(ContentService.MimeType.JSON);
   }
 }

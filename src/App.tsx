@@ -2,10 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { 
   LayoutDashboard, Users, GraduationCap, Briefcase, BookOpen, Mail, Archive, Package, UserCheck, Settings, LogOut, Clock, Calendar, Menu, X, Landmark, Lock, ShieldAlert, FileText
 } from "lucide-react";
-import { db } from "./lib/firebase";
-import { collection, doc, getDoc, setDoc, onSnapshot } from "firebase/firestore";
 
-// ... (existing imports and component structure) ...
+
+import { getData, saveData } from "./lib/sheets";
 
 // Views Imports
 import DashboardView from "./components/DashboardView";
@@ -91,97 +90,84 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
-  // Synchronize Firestore
+  // Load data
   useEffect(() => {
-    const collections = [
-      { name: "siswa", setter: setSiswa, loaded: siswaLoaded },
-      { name: "guru", setter: setGuru, loaded: guruLoaded },
-      { name: "pegawai", setter: setPegawai, loaded: pegawaiLoaded },
-      { name: "kelas", setter: setKelas, loaded: kelasLoaded },
-      { name: "suratMasuk", setter: setSuratMasuk, loaded: suratMasukLoaded },
-      { name: "suratKeluar", setter: setSuratKeluar, loaded: suratKeluarLoaded },
-      { name: "arsip", setter: setArsip, loaded: arsipLoaded },
-      { name: "inventaris", setter: setInventaris, loaded: inventarisLoaded },
-      { name: "users", setter: setUsers, loaded: usersLoaded },
-      { name: "settings", setter: setSettings, loaded: settingsLoaded },
-    ];
-
-    const unsubscribes = collections.map(({ name, setter, loaded }) => 
-      onSnapshot(doc(db, "data", name), async (docSnapshot) => {
-        if (docSnapshot.exists()) {
-          setter(docSnapshot.data().value);
-          loaded.current = true;
-        } else {
-          // Initialize with default value if it doesn't exist, but don't force write it yet
-          const initialValue = 
-            name === "siswa" ? initialSiswa :
-            name === "guru" ? initialGuru :
-            name === "pegawai" ? initialPegawai :
-            name === "kelas" ? initialKelas :
-            name === "suratMasuk" ? initialSuratMasuk :
-            name === "suratKeluar" ? initialSuratKeluar :
-            name === "arsip" ? initialArsip :
-            name === "inventaris" ? initialInventaris :
-            name === "users" ? initialUsers :
-            defaultSettings;
-          
-          setter(initialValue);
-          loaded.current = true;
-        }
-      })
-    );
-    return () => unsubscribes.forEach(unsub => unsub());
+    async function loadData() {
+      const data = await getData();
+      if (data) {
+        if (data.siswa) setSiswa(data.siswa);
+        if (data.guru) setGuru(data.guru);
+        if (data.pegawai) setPegawai(data.pegawai);
+        if (data.kelas) setKelas(data.kelas);
+        if (data.suratMasuk) setSuratMasuk(data.suratMasuk);
+        if (data.suratKeluar) setSuratKeluar(data.suratKeluar);
+        if (data.arsip) setArsip(data.arsip);
+        if (data.inventaris) setInventaris(data.inventaris);
+        if (data.users) setUsers(data.users);
+        if (data.settings) setSettings(data.settings);
+      }
+      siswaLoaded.current = true;
+      guruLoaded.current = true;
+      pegawaiLoaded.current = true;
+      kelasLoaded.current = true;
+      suratMasukLoaded.current = true;
+      suratKeluarLoaded.current = true;
+      arsipLoaded.current = true;
+      inventarisLoaded.current = true;
+      usersLoaded.current = true;
+      settingsLoaded.current = true;
+    }
+    loadData();
   }, []);
 
   useEffect(() => {
     if (!siswaLoaded.current) return;
-    setDoc(doc(db, "data", "siswa"), { value: siswa });
+    saveData("siswa", siswa);
   }, [siswa]);
 
   useEffect(() => {
     if (!guruLoaded.current) return;
-    setDoc(doc(db, "data", "guru"), { value: guru });
+    saveData("guru", guru);
   }, [guru]);
 
   useEffect(() => {
     if (!pegawaiLoaded.current) return;
-    setDoc(doc(db, "data", "pegawai"), { value: pegawai });
+    saveData("pegawai", pegawai);
   }, [pegawai]);
 
   useEffect(() => {
     if (!kelasLoaded.current) return;
-    setDoc(doc(db, "data", "kelas"), { value: kelas });
+    saveData("kelas", kelas);
   }, [kelas]);
 
   useEffect(() => {
     if (!suratMasukLoaded.current) return;
-    setDoc(doc(db, "data", "suratMasuk"), { value: suratMasuk });
+    saveData("suratMasuk", suratMasuk);
   }, [suratMasuk]);
 
   useEffect(() => {
     if (!suratKeluarLoaded.current) return;
-    setDoc(doc(db, "data", "suratKeluar"), { value: suratKeluar });
+    saveData("suratKeluar", suratKeluar);
   }, [suratKeluar]);
 
   useEffect(() => {
     if (!arsipLoaded.current) return;
-    setDoc(doc(db, "data", "arsip"), { value: arsip });
+    saveData("arsip", arsip);
   }, [arsip]);
 
   useEffect(() => {
     if (!inventarisLoaded.current) return;
-    setDoc(doc(db, "data", "inventaris"), { value: inventaris });
+    saveData("inventaris", inventaris);
   }, [inventaris]);
 
   useEffect(() => {
     if (!usersLoaded.current) return;
-    setDoc(doc(db, "data", "users"), { value: users });
+    saveData("users", users);
   }, [users]);
 
   useEffect(() => {
     if (!settingsLoaded.current) return;
-    setDoc(doc(db, "data", "settings"), { value: settings })
-      .catch(err => console.error("Error saving settings:", err));
+    saveData("settings", settings);
   }, [settings]);
 
   // LOGIN EXECUTION
