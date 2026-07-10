@@ -1,1 +1,1 @@
-DEPLOY_URL=https://script.google.com/macros/s/AKfycbyAxS-Z9SkiSznUVggEFyDAvIGNu1Wbq7YJ4CsOSbt4A5HOQvLyyMzGXJKJoUT43KVH/exec
+DEPLOY_URL=https://script.google.com/macros/s/AKfycbxwm5BVbaBIsxTGTMe4j0r2Udk7NJtknN6OTlEvxOgnxfI2IC064kfPRD91ww3OmhML/exec
