@@ -80,7 +80,7 @@ var DEFAULTS = {
   ],
   "kelas": [
     { "id": "k-1", "namaKelas": "VII-A", "waliKelas": "Sartika, S.Pd.", "tahunPelajaran": "2026/2027", "jumlahSiswa": 32 },
-    { "id": "k-2", "namaKelas: ": "VII-B", "waliKelas": "Andi Saputra, S.Si.", "tahunPelajaran": "2026/2027", "jumlahSiswa": 30 }
+    { "id": "k-2", "namaKelas": "VII-B", "waliKelas": "Andi Saputra, S.Si.", "tahunPelajaran": "2026/2027", "jumlahSiswa": 30 }
   ],
   "suratMasuk": [],
   "suratKeluar": [],
@@ -167,13 +167,104 @@ function setupDatabase() {
   }
 }
 
+/**
+ * Saves a base64 image string to Google Drive as a permanent public file
+ * and returns its direct, lightweight public download link.
+ */
+function saveBase64ImageToDrive(base64Str, fileName) {
+  try {
+    // base64Str is "data:image/jpeg;base64,/9j/4AAQSkZJRg..." or "data:image/png;base64,..."
+    var split = base64Str.split(",");
+    var mimeType = "image/jpeg";
+    var base64Data = base64Str;
+    if (split.length > 1) {
+      mimeType = split[0].match(/:(.*?);/)[1];
+      base64Data = split[1];
+    }
+    
+    var decoded = Utilities.base64Decode(base64Data);
+    var blob = Utilities.newBlob(decoded, mimeType, fileName);
+    
+    // Get or create dedicated asset folder
+    var folderName = "Administrasi TU Assets";
+    var folders = DriveApp.getFoldersByName(folderName);
+    var folder;
+    if (folders.hasNext()) {
+      folder = folders.next();
+    } else {
+      folder = DriveApp.createFolder(folderName);
+    }
+    
+    // Delete old files with the exact same name to prevent accumulation
+    var files = folder.getFilesByName(fileName);
+    while (files.hasNext()) {
+      try {
+        files.next().setTrashed(true);
+      } catch (err) {
+        Logger.log("Error trashing file: " + err.toString());
+      }
+    }
+    
+    var file = folder.createFile(blob);
+    file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    
+    // Direct displayable link for elements like <img>
+    var url = "https://drive.google.com/uc?export=download&id=" + file.getId();
+    Logger.log("Successfully saved " + fileName + " to Drive: " + url);
+    return url;
+  } catch (e) {
+    Logger.log("Failed to save image to Drive (" + fileName + "): " + e.toString());
+    return base64Str; // Fallback to original Base64 if any error occurs
+  }
+}
+
+/**
+ * Recursively search for any base64 image strings inside an object or array,
+ * save them to Google Drive, and replace them with the Google Drive link.
+ */
+function processBase64Fields(obj, prefix) {
+  if (!obj) {
+    return obj;
+  }
+  
+  if (Array.isArray(obj)) {
+    return obj.map(function(item, idx) {
+      return processBase64Fields(item, prefix + "_" + idx);
+    });
+  }
+  
+  if (typeof obj === 'object') {
+    var newObj = {};
+    for (var k in obj) {
+      if (obj.hasOwnProperty(k)) {
+        var val = obj[k];
+        if (typeof val === 'string' && val.indexOf("data:image") === 0) {
+          // Unique filename containing the field key and a short timestamp
+          var fileExt = "jpg";
+          if (val.indexOf("image/png") !== -1) fileExt = "png";
+          else if (val.indexOf("image/gif") !== -1) fileExt = "gif";
+          
+          var fileName = prefix + "_" + k + "_" + Math.floor(Math.random() * 1000) + "." + fileExt;
+          newObj[k] = saveBase64ImageToDrive(val, fileName);
+        } else if (typeof val === 'object' && val !== null) {
+          newObj[k] = processBase64Fields(val, prefix + "_" + k);
+        } else {
+          newObj[k] = val;
+        }
+      }
+    }
+    return newObj;
+  }
+  
+  return obj;
+}
+
 function doGet(e) {
   try {
     var key = e && e.parameter ? e.parameter.key : null;
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName("Database");
     
-    // If sheet doesn't exist, automatically run setup
     if (!sheet) {
       setupDatabase();
       sheet = ss.getSheetByName("Database");
@@ -182,7 +273,6 @@ function doGet(e) {
     var data = sheet.getDataRange().getValues();
     
     var obj = {};
-    // Skip headers (row 1 is at index 0)
     for (var i = 1; i < data.length; i++) {
       if (data[i][0]) {
         try {
@@ -193,12 +283,10 @@ function doGet(e) {
       }
     }
     
-    // Verify all keys from DEFAULTS exist, populate any missing keys with defaults
     var modified = false;
     for (var k in DEFAULTS) {
       if (obj[k] === undefined) {
         obj[k] = DEFAULTS[k];
-        // Append missing key to sheet
         sheet.appendRow([k, JSON.stringify(DEFAULTS[k])]);
         modified = true;
       }
@@ -226,7 +314,26 @@ function doPost(e) {
   try {
     var data = JSON.parse(e.postData.contents);
     var key = data.key;
-    var value = typeof data.value === 'string' ? data.value : JSON.stringify(data.value);
+    var rawValue = data.value;
+    
+    // If the value is a stringified JSON representation, parse it to process base64
+    var wasString = false;
+    if (typeof rawValue === 'string') {
+      try {
+        rawValue = JSON.parse(rawValue);
+        wasString = true;
+      } catch(e) {
+        // Not a JSON string, leave it as is
+      }
+    }
+    
+    // Intercept and recursively upload any base64 images found to Google Drive
+    if (typeof rawValue === 'object' && rawValue !== null) {
+      rawValue = processBase64Fields(rawValue, key);
+    }
+    
+    // Encode value back to string if it was parsed or is an object
+    var valueToSave = wasString || typeof rawValue === 'object' ? JSON.stringify(rawValue) : rawValue;
     
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName("Database");
@@ -240,20 +347,23 @@ function doPost(e) {
     var values = range.getValues();
     
     var found = false;
-    // Skip headers
     for (var i = 1; i < values.length; i++) {
       if (values[i][0] === key) {
-        sheet.getRange(i + 1, 2).setValue(value);
+        sheet.getRange(i + 1, 2).setValue(valueToSave);
         found = true;
         break;
       }
     }
     
     if (!found) {
-      sheet.appendRow([key, value]);
+      sheet.appendRow([key, valueToSave]);
     }
     
-    return ContentService.createTextOutput(JSON.stringify({status: "success"}))
+    // If we transformed fields, let's return the updated value back so that the frontend state gets synchronized instantly!
+    return ContentService.createTextOutput(JSON.stringify({
+      status: "success", 
+      processedValue: rawValue
+    }))
       .setMimeType(ContentService.MimeType.JSON);
       
   } catch (err) {
