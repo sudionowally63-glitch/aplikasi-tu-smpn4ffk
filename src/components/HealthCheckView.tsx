@@ -119,7 +119,18 @@ export default function HealthCheckView({ onBackToDashboard }: HealthCheckViewPr
         const displayMsg = res?.message || errorMsg;
 
         // Determine why it failed
-        if (errorMsg.includes("Received HTML") || errorMsg.includes("HTML") || displayMsg.includes("HTML")) {
+        if (errorMsg.includes("Google Authentication Required") || errorMsg.includes("CORS_OR_AUTH_REQUIRED")) {
+          newSteps[2].status = "success";
+          newSteps[2].message = "Server Google Apps Script merespon.";
+
+          newSteps[3].status = "failed";
+          newSteps[3].message = "Izin Ditolak (Memerlukan login Akun Google).";
+          newSteps[3].recommendation = "Harap buka menu Deploy -> Manage deployments di Google Apps Script Anda. Klik ikon pensil, pastikan opsi 'Who has access' diubah dari 'Only myself' menjadi 'Anyone' (Siapa saja). Klik Deploy untuk menyimpan.";
+
+          newSteps[4].status = "failed";
+          newSteps[4].message = "Gagal memproses data spreadsheet.";
+          newSteps[4].recommendation = "Selesaikan masalah otorisasi publik di atas.";
+        } else if (errorMsg.includes("Received HTML") || errorMsg.includes("HTML") || displayMsg.includes("HTML")) {
           newSteps[2].status = "failed";
           newSteps[2].message = "Koneksi terjalin, namun server mengembalikan halaman HTML bukan JSON. (SALAH URL/SETTING)";
           newSteps[2].recommendation = "BACA DENGAN TELITI: URL yang Anda masukkan SALAH atau belum di-deploy dengan benar. Anda memasukkan URL web page biasa, BUKAN URL endpoint API JSON.";
@@ -131,17 +142,6 @@ export default function HealthCheckView({ onBackToDashboard }: HealthCheckViewPr
           newSteps[4].status = "failed";
           newSteps[4].message = "Gagal memproses data spreadsheet.";
           newSteps[4].recommendation = "Harap selesaikan izin akses publik di atas. Salin ulang URL Web App yang berakhiran '/exec' lalu simpan di menu Pengaturan.";
-        } else if (errorMsg.includes("Google Authentication Required") || errorMsg.includes("CORS_OR_AUTH_REQUIRED")) {
-          newSteps[2].status = "success";
-          newSteps[2].message = "Server Google Apps Script merespon.";
-
-          newSteps[3].status = "failed";
-          newSteps[3].message = "Izin Ditolak (Memerlukan login Akun Google).";
-          newSteps[3].recommendation = "Harap buka menu Deploy -> Manage deployments di Google Apps Script Anda. Klik ikon pensil, pastikan opsi 'Who has access' diubah dari 'Only myself' menjadi 'Anyone' (Siapa saja). Klik Deploy untuk menyimpan.";
-
-          newSteps[4].status = "failed";
-          newSteps[4].message = "Gagal memproses data spreadsheet.";
-          newSteps[4].recommendation = "Selesaikan masalah otorisasi publik di atas.";
         } else if (errorMsg.includes("Timeout") || errorMsg.includes("timeout")) {
           newSteps[2].status = "failed";
           newSteps[2].message = "Batas waktu request (Timeout) terlampaui.";
