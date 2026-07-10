@@ -285,9 +285,20 @@ function doGet(e) {
     
     var modified = false;
     for (var k in DEFAULTS) {
-      if (obj[k] === undefined) {
+      if (obj[k] === undefined || obj[k] === null || obj[k] === "" || (k === "settings" && typeof obj[k] !== "object")) {
         obj[k] = DEFAULTS[k];
-        sheet.appendRow([k, JSON.stringify(DEFAULTS[k])]);
+        var foundRow = -1;
+        for (var r = 1; r < data.length; r++) {
+          if (data[r][0] === k) {
+            foundRow = r + 1;
+            break;
+          }
+        }
+        if (foundRow !== -1) {
+          sheet.getRange(foundRow, 2).setValue(JSON.stringify(DEFAULTS[k]));
+        } else {
+          sheet.appendRow([k, JSON.stringify(DEFAULTS[k])]);
+        }
         modified = true;
       }
     }

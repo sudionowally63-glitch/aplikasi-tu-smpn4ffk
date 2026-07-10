@@ -154,7 +154,7 @@ export default function PengaturanView({ settings, setSettings, onWipeData }: Pe
       
       const data = await getData("settings");
       
-      if (data && !data.error) {
+      if (data !== undefined && data !== null && !data.error) {
         setTestStatus({
           success: true,
           message: "Koneksi berhasil! Google Sheets terhubung secara real-time dan sinkron."
