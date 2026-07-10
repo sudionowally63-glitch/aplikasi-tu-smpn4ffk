@@ -121,16 +121,16 @@ export default function HealthCheckView({ onBackToDashboard }: HealthCheckViewPr
         // Determine why it failed
         if (errorMsg.includes("Received HTML") || errorMsg.includes("HTML") || displayMsg.includes("HTML")) {
           newSteps[2].status = "failed";
-          newSteps[2].message = "Koneksi terjalin, namun server mengembalikan halaman HTML bukan JSON.";
-          newSteps[2].recommendation = "Ini terjadi karena URL Google Apps Script yang Anda masukkan salah (misal link editor, link spreadsheet) atau belum di-deploy sebagai Web App.";
+          newSteps[2].message = "Koneksi terjalin, namun server mengembalikan halaman HTML bukan JSON. (SALAH URL/SETTING)";
+          newSteps[2].recommendation = "BACA DENGAN TELITI: URL yang Anda masukkan SALAH atau belum di-deploy dengan benar. Anda memasukkan URL web page biasa, BUKAN URL endpoint API JSON.";
 
           newSteps[3].status = "failed";
           newSteps[3].message = "Terjadi pengalihan login akun Google (Akses Ditolak).";
-          newSteps[3].recommendation = "Saat men-deploy di Google Apps Script, opsi 'Who has access' (Siapa yang memiliki akses) HARUS disetel ke 'Anyone' (Siapa saja) agar aplikasi Vercel dapat membaca data tanpa login.";
+          newSteps[3].recommendation = "PENTING: Di Google Apps Script, klik tombol 'Deploy' (Terapkan) -> 'New Deployment'. Pilih tipe 'Web App'. Pada bagian 'Who has access' (Siapa yang memiliki akses), ANDA WAJIB MEMILIH 'Anyone' (Siapa saja). JANGAN pilih 'Only myself' atau 'Anyone with Google Account'.";
 
           newSteps[4].status = "failed";
           newSteps[4].message = "Gagal memproses data spreadsheet.";
-          newSteps[4].recommendation = "Harap selesaikan izin akses publik di atas terlebih dahulu.";
+          newSteps[4].recommendation = "Harap selesaikan izin akses publik di atas. Salin ulang URL Web App yang berakhiran '/exec' lalu simpan di menu Pengaturan.";
         } else if (errorMsg.includes("Google Authentication Required") || errorMsg.includes("CORS_OR_AUTH_REQUIRED")) {
           newSteps[2].status = "success";
           newSteps[2].message = "Server Google Apps Script merespon.";

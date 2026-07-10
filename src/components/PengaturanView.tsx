@@ -35,16 +35,16 @@ export default function PengaturanView({ settings, setSettings, onWipeData }: Pe
     if (!url) return null;
     const trimmed = url.trim();
     if (trimmed.includes("docs.google.com/spreadsheets")) {
-      return "Peringatan: Ini adalah URL Google Spreadsheet biasa. Anda harus melakukan Deploy Apps Script terlebih dahulu dan menggunakan URL Web App (berakhiran /exec) dari sana.";
+      return "ERROR FATAL: Jangan masukkan URL Spreadsheet! Anda harus memasukkan URL Web App Google Apps Script (berakhiran /exec). Silakan lihat petunjuk di bawah.";
     }
     if (trimmed.includes("script.google.com") && trimmed.includes("/edit")) {
-      return "Peringatan: Ini adalah URL editor Apps Script. Harap lakukan Deploy -> New Deployment (Penerapan Baru) di kanan atas, lalu salin URL Web App yang berakhiran /exec.";
+      return "ERROR FATAL: Ini adalah URL Editor script! Klik tombol biru 'Deploy' -> 'New Deployment', pilih Web App, set Who has access ke 'Anyone' (Siapa saja), lalu Copy URL yang muncul.";
     }
     if (!trimmed.startsWith("https://script.google.com/macros/s/")) {
-      return "Format URL tidak cocok. URL Web App Google Apps Script yang benar harus diawali dengan 'https://script.google.com/macros/s/'";
+      return "FORMAT URL SALAH: URL Google Apps Script yang benar HARUS diawali dengan 'https://script.google.com/macros/s/'.";
     }
     if (!trimmed.endsWith("/exec") && !trimmed.includes("/exec?")) {
-      return "Saran: URL Web App biasanya diakhiri dengan '/exec'. Harap periksa kembali hasil salinan URL Web App Anda.";
+      return "SARAN PENTING: URL Web App HARUS diakhiri dengan '/exec'. Harap periksa kembali apakah Anda menyalin URL Web App yang benar.";
     }
     return null;
   };
@@ -354,20 +354,22 @@ export default function PengaturanView({ settings, setSettings, onWipeData }: Pe
             </div>
           </div>
 
-          <div className="p-4 bg-amber-50/70 rounded-xl border border-amber-100 text-amber-800 space-y-2">
-            <h4 className="text-xs font-bold flex items-center gap-1.5">
-              <AlertCircle className="w-4 h-4 text-amber-600" />
-              Cara Menghubungkan Google Spreadsheet Anda secara Real-time:
+          <div className="p-4 bg-rose-50 rounded-xl border border-rose-200 text-rose-900 space-y-3">
+            <h4 className="text-sm font-bold flex items-center gap-1.5 text-rose-700">
+              <AlertCircle className="w-5 h-5" />
+              PENTING: Langkah Wajib Deploy Database Google Sheets
             </h4>
-            <ol className="list-decimal list-inside text-[11px] space-y-1 pl-1 leading-relaxed text-slate-600">
+            <ol className="list-decimal list-inside text-xs space-y-2 pl-1 leading-relaxed text-rose-800">
               <li>Buat Spreadsheet baru di Google Sheets.</li>
-              <li>Klik menu <strong className="text-slate-800">Ekstensi &gt; Apps Script</strong>.</li>
-              <li>Hapus kode bawaan lalu salin dan tempelkan seluruh kode dari file <strong className="text-slate-800">code.gs</strong> ke editor Apps Script Anda.</li>
-              <li>Klik tombol <strong className="text-slate-800">Terapkan &gt; Penerapan Baru</strong> (Deploy &gt; New Deployment) di kanan atas.</li>
-              <li>Pilih jenis <strong className="text-slate-800">Aplikasi Web</strong> (Web App).</li>
-              <li>Pastikan bagian <strong className="text-slate-800">Yang memiliki akses</strong> disetel menjadi <strong className="text-slate-800">Siapa saja</strong> (Anyone).</li>
-              <li>Klik <strong className="text-slate-800">Terapkan</strong>, berikan izin akses Google, lalu salin <strong className="text-slate-800">URL Web App</strong> yang dihasilkan.</li>
-              <li>Tempelkan URL tersebut ke kolom input di bawah ini, lalu klik <strong className="text-slate-800">Simpan Pengaturan</strong> atau klik <strong className="text-slate-800">Test Koneksi</strong>.</li>
+              <li>Klik menu <strong className="font-bold">Ekstensi &gt; Apps Script</strong>.</li>
+              <li>Hapus kode bawaan lalu salin dan tempelkan seluruh kode dari file <strong className="font-bold">code.gs</strong> ke editor Apps Script Anda.</li>
+              <li>Klik tombol biru <strong className="font-bold">Terapkan &gt; Penerapan Baru</strong> (Deploy &gt; New Deployment) di kanan atas.</li>
+              <li>Klik ikon roda gigi (gear) di sebelah "Pilih jenis", lalu pilih <strong className="font-bold">Aplikasi Web</strong> (Web App).</li>
+              <li className="bg-rose-200/50 p-1.5 rounded font-bold">⚠️ PASTIKAN: Bagian "Who has access" (Yang memiliki akses) HARUS disetel menjadi "Anyone" (Siapa saja). Jangan pilih yang lain!</li>
+              <li>Klik <strong className="font-bold">Terapkan</strong>, lalu klik "Authorize access" (Izinkan akses).</li>
+              <li>Jika muncul peringatan keamanan Google, klik "Advanced" (Lanjutan) lalu "Go to... (unsafe)".</li>
+              <li>Salin <strong className="font-bold">URL Web App</strong> yang dihasilkan (berakhiran <code className="bg-rose-100 px-1 rounded text-rose-900">/exec</code>).</li>
+              <li>Tempelkan URL tersebut ke kolom input di bawah ini, lalu klik <strong className="font-bold">Simpan URL</strong>.</li>
             </ol>
           </div>
 
