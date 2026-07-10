@@ -1,3 +1,21 @@
+/**
+ * =========================================================================================
+ * PETUNJUK DEPLOY GOOGLE APPS SCRIPT (MANDATORY INSTRUCTIONS)
+ * =========================================================================================
+ * 1. Di editor Google Apps Script ini, klik tombol "Deploy" di kanan atas -> Pilih "New deployment".
+ * 2. Klik ikon gir (pilih jenis deployment), lalu pilih "Web app" (Aplikasi Web).
+ * 3. Isi deskripsi bebas (contoh: "Versi Prod 1.0").
+ * 4. Bagian "Execute as" (Jalankan sebagai) WAJIB pilih: "Me" (Email Google Anda).
+ * 5. Bagian "Who has access" (Siapa yang memiliki akses) WAJIB pilih: "Anyone" (Siapa saja).
+ * 6. Klik "Deploy".
+ * 7. Jika pertama kali, klik "Authorize access" (Berikan akses) -> Pilih akun Google Anda.
+ *    Jika muncul peringatan "Google hasn't verified this app", klik "Advanced" (Lanjutan) -> 
+ *    Klik "Go to Administrasi Tata Usaha (unsafe)" -> Klik "Allow" (Izinkan).
+ * 8. Salin "Web app URL" yang diberikan (harus berakhiran dengan "/exec").
+ * 9. Tempelkan URL tersebut ke halaman Pengaturan Aplikasi ini, lalu klik "Simpan & Uji Koneksi".
+ * =========================================================================================
+ */
+
 var DEFAULTS = {
   "siswa": [
     {
@@ -288,11 +306,27 @@ function processBase64Fields(obj, prefix) {
     for (var k in obj) {
       if (obj.hasOwnProperty(k)) {
         var val = obj[k];
-        if (typeof val === 'string' && val.indexOf("data:image") === 0) {
-          // Unique filename containing the field key and a short timestamp
-          var fileExt = "jpg";
-          if (val.indexOf("image/png") !== -1) fileExt = "png";
-          else if (val.indexOf("image/gif") !== -1) fileExt = "gif";
+        // Support any base64 Data URL (images, PDFs, documents, etc.)
+        if (typeof val === 'string' && val.indexOf("data:") === 0 && val.indexOf(";base64,") !== -1) {
+          // Identify mime type and file extension
+          var mimeMatch = val.match(/data:(.*?);/);
+          var mimeType = mimeMatch ? mimeMatch[1] : "";
+          var fileExt = "bin";
+          
+          if (mimeType) {
+            if (mimeType.indexOf("image/jpeg") !== -1 || mimeType.indexOf("image/jpg") !== -1) fileExt = "jpg";
+            else if (mimeType.indexOf("image/png") !== -1) fileExt = "png";
+            else if (mimeType.indexOf("image/gif") !== -1) fileExt = "gif";
+            else if (mimeType.indexOf("application/pdf") !== -1) fileExt = "pdf";
+            else if (mimeType.indexOf("application/msword") !== -1) fileExt = "doc";
+            else if (mimeType.indexOf("application/vnd.openxmlformats-officedocument.wordprocessingml.document") !== -1) fileExt = "docx";
+            else if (mimeType.indexOf("application/vnd.ms-excel") !== -1) fileExt = "xls";
+            else if (mimeType.indexOf("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") !== -1) fileExt = "xlsx";
+            else {
+              var parts = mimeType.split("/");
+              if (parts.length > 1) fileExt = parts[1];
+            }
+          }
           
           var fileName = prefix + "_" + k + "_" + Math.floor(Math.random() * 1000) + "." + fileExt;
           newObj[k] = saveBase64ImageToDrive(val, fileName);
@@ -321,6 +355,16 @@ function doGet(e) {
       return ContentService.createTextOutput(JSON.stringify({
         error: "Gagal memuat Spreadsheet. Jika Anda menggunakan Script Standalone, pastikan layanan Drive API diizinkan dan akun Google Anda valid.",
         status: "error"
+      })).setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    if (key === "health") {
+      return ContentService.createTextOutput(JSON.stringify({
+        status: "success",
+        message: "Koneksi berhasil! Google Apps Script terhubung dengan baik.",
+        spreadsheetId: ss.getId(),
+        spreadsheetName: ss.getName(),
+        sheets: ss.getSheets().map(function(s) { return s.getName(); })
       })).setMimeType(ContentService.MimeType.JSON);
     }
     
