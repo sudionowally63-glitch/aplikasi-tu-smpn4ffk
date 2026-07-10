@@ -2375,49 +2375,8 @@ export default function BuatSuratView({
                 )}
                 <p className="signature-role">Kepala Sekolah,</p>
                 
-                <div className="relative h-20 my-2 flex items-center">
-                  {/* 1. Stempel Basah (Wet Seal Stamp) */}
-                  <div className="absolute left-[-25px] top-[-10px] w-24 h-24 select-none pointer-events-none opacity-85 rotate-[-8deg] z-10">
-                    <svg viewBox="0 0 100 100" className="w-full h-full text-indigo-700/80 fill-none">
-                      <circle cx="50" cy="50" r="44" stroke="currentColor" strokeWidth="2" />
-                      <circle cx="50" cy="50" r="39" stroke="currentColor" strokeWidth="0.8" strokeDasharray="3 1" />
-                      <circle cx="50" cy="50" r="28" stroke="currentColor" strokeWidth="1.2" />
-                      
-                      <path id="stamp-text-path-top" d="M 16,50 A 34,34 0 0,1 84,50" className="fill-none" />
-                      <path id="stamp-text-path-bottom" d="M 84,50 A 34,34 0 0,1 16,50" className="fill-none" />
-                      
-                      <text className="font-sans font-extrabold text-[5.2px] uppercase fill-indigo-700/80 tracking-wider">
-                        <textPath href="#stamp-text-path-top" startOffset="50%" textAnchor="middle">
-                          PEMERINTAH KAB. FAKFAK
-                        </textPath>
-                      </text>
-                      
-                      <text className="font-sans font-extrabold text-[5.2px] uppercase fill-indigo-700/80 tracking-wider">
-                        <textPath href="#stamp-text-path-bottom" startOffset="50%" textAnchor="middle">
-                          DINAS PENDIDIKAN
-                        </textPath>
-                      </text>
-                      
-                      <text x="50" y="47" className="font-sans font-black text-[6.5px] uppercase fill-indigo-700/80 tracking-wide text-center" textAnchor="middle">
-                        {settings.namaSekolah.length > 25 ? "SMP NEGERI 4" : settings.namaSekolah}
-                      </text>
-                      <text x="50" y="55" className="font-sans font-black text-[6.5px] uppercase fill-indigo-700/80 tracking-wide text-center" textAnchor="middle">
-                        FAKFAK
-                      </text>
-                      
-                      <text x="14" y="52" className="font-sans text-[6px] fill-indigo-700/80" textAnchor="middle">★</text>
-                      <text x="86" y="52" className="font-sans text-[6px] fill-indigo-700/80" textAnchor="middle">★</text>
-                    </svg>
-                  </div>
-
-                  {/* 2. Realistic Hand-drawn blue signature SVG */}
-                  <div className="absolute left-[30px] top-[5px] w-28 h-14 select-none pointer-events-none opacity-90 z-0">
-                    <svg viewBox="0 0 120 60" className="w-full h-full text-blue-800 fill-none">
-                      <path d="M 10,35 Q 25,10 40,30 T 70,25 T 95,20 Q 110,40 100,45 T 75,35" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                      <path d="M 22,28 Q 45,45 65,30 T 115,25" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                    </svg>
-                  </div>
-                </div>
+                {/* Spacing for manual signature & stamp */}
+                <div className="h-20 my-2"></div>
                 
                 <p className="signature-name">{settings.namaKepsek || "Kepala Sekolah"}</p>
                 <p className="signature-nip">NIP. {settings.nipKepsek || "1980000000000"}</p>
