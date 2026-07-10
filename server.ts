@@ -9,10 +9,23 @@ async function startServer() {
 
   app.use(express.json());
 
+  // Helper to get Google Apps Script URL
+  const getAppUrl = () => {
+    try {
+      let content = fs.readFileSync("app.txt", "utf8").trim();
+      if (content.startsWith("DEPLOY_URL=")) {
+        content = content.replace("DEPLOY_URL=", "").trim();
+      }
+      return content;
+    } catch (e) {
+      return "";
+    }
+  };
+
   // API route to proxy requests to Google Apps Script
   app.post("/api/sheets", async (req, res) => {
     try {
-      const appUrl = fs.readFileSync("app.txt", "utf8").trim();
+      const appUrl = getAppUrl();
       if (!appUrl) {
         return res.status(500).json({ error: "Google Apps Script URL not configured in app.txt" });
       }
@@ -32,7 +45,7 @@ async function startServer() {
 
   app.get("/api/sheets", async (req, res) => {
     try {
-      const appUrl = fs.readFileSync("app.txt", "utf8").trim();
+      const appUrl = getAppUrl();
       if (!appUrl) {
         return res.status(500).json({ error: "Google Apps Script URL not configured in app.txt" });
       }
