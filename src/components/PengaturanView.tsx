@@ -40,7 +40,10 @@ export default function PengaturanView({ settings, setSettings, onWipeData }: Pe
     if (trimmed.includes("script.google.com") && trimmed.includes("/edit")) {
       return "ERROR FATAL: Ini adalah URL Editor script! Klik tombol biru 'Deploy' -> 'New Deployment', pilih Web App, set Who has access ke 'Anyone' (Siapa saja), lalu Copy URL yang muncul.";
     }
-    if (!trimmed.startsWith("https://script.google.com/macros/s/")) {
+    if (trimmed.includes("/a/macros/") || trimmed.includes("belajar.id")) {
+      return "AKUN TERBLOKIR: Anda menggunakan akun Workspace (misal belajar.id). Akun ini DILARANG membagikan akses ke 'Anyone' (publik). Anda WAJIB membuat ulang file ini menggunakan email pribadi (@gmail.com).";
+    }
+    if (!trimmed.startsWith("https://script.google.com/macros/s/") && !trimmed.includes("/macros/s/")) {
       return "FORMAT URL SALAH: URL Google Apps Script yang benar HARUS diawali dengan 'https://script.google.com/macros/s/'.";
     }
     if (!trimmed.endsWith("/exec") && !trimmed.includes("/exec?")) {
@@ -425,9 +428,17 @@ export default function PengaturanView({ settings, setSettings, onWipeData }: Pe
             </div>
             
             {getUrlWarning(sheetsUrl) && (
-              <div className="text-[11px] text-amber-800 flex items-start gap-2 bg-amber-50 border border-amber-200/60 p-2.5 rounded-lg">
-                <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                <p>{getUrlWarning(sheetsUrl)}</p>
+              <div className={`text-[11px] flex items-start gap-2 p-2.5 rounded-lg border ${
+                getUrlWarning(sheetsUrl)?.includes("ERROR") || getUrlWarning(sheetsUrl)?.includes("SALAH") || getUrlWarning(sheetsUrl)?.includes("TERBLOKIR")
+                ? "bg-rose-50 border-rose-200 text-rose-800"
+                : "bg-amber-50 border-amber-200/60 text-amber-800"
+              }`}>
+                <AlertCircle className={`w-4 h-4 shrink-0 mt-0.5 ${
+                  getUrlWarning(sheetsUrl)?.includes("ERROR") || getUrlWarning(sheetsUrl)?.includes("SALAH") || getUrlWarning(sheetsUrl)?.includes("TERBLOKIR")
+                  ? "text-rose-600"
+                  : "text-amber-600"
+                }`} />
+                <p className="font-medium">{getUrlWarning(sheetsUrl)}</p>
               </div>
             )}
           </div>

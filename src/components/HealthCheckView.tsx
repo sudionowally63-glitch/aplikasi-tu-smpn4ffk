@@ -124,26 +124,24 @@ export default function HealthCheckView({ onBackToDashboard }: HealthCheckViewPr
           newSteps[2].message = "Server Google Apps Script merespon.";
 
           newSteps[3].status = "failed";
-          newSteps[3].message = "Izin Ditolak (Memerlukan login Akun Google / Terhalang SSO Belajar.id).";
-          newSteps[3].recommendation = displayMsg.includes("Belajar.id") 
-            ? "AKUN BELAJAR.ID DIBLOKIR: Akun Google Workspace Anda tidak mengizinkan opsi 'Anyone'. Anda WAJIB menggunakan akun Gmail pribadi (@gmail.com) untuk membuat Spreadsheet & Apps Script." 
-            : "Harap buka menu Deploy -> Manage deployments di Google Apps Script Anda. Klik ikon pensil, pastikan opsi 'Who has access' diubah dari 'Only myself' menjadi 'Anyone' (Siapa saja). Klik Deploy untuk menyimpan.";
+          newSteps[3].message = "Izin Ditolak (Terhalang SSO Belajar.id / Butuh Login).";
+          newSteps[3].recommendation = "AKUN BELAJAR.ID DIBLOKIR: Akun Google Workspace Anda tidak mengizinkan opsi berbagi publik. Anda WAJIB menggunakan akun Gmail pribadi (@gmail.com) untuk membuat Spreadsheet & Apps Script.";
 
           newSteps[4].status = "failed";
           newSteps[4].message = "Gagal memproses data spreadsheet.";
-          newSteps[4].recommendation = "Selesaikan masalah otorisasi publik di atas.";
+          newSteps[4].recommendation = "Gunakan email pribadi (@gmail.com) untuk melakukan setup.";
         } else if (errorMsg.includes("Received HTML") || errorMsg.includes("HTML") || displayMsg.includes("HTML")) {
           newSteps[2].status = "failed";
-          newSteps[2].message = "Koneksi terjalin, namun server mengembalikan halaman HTML bukan JSON. (SALAH URL/SETTING)";
-          newSteps[2].recommendation = "BACA DENGAN TELITI: URL yang Anda masukkan SALAH atau belum di-deploy dengan benar. Anda memasukkan URL web page biasa, BUKAN URL endpoint API JSON.";
+          newSteps[2].message = "ERROR FATAL: Terhalang Halaman Login Google Workspace (Akses Ditolak)";
+          newSteps[2].recommendation = "MENGGUNAKAN AKUN BELAJAR.ID? Karena Anda menggunakan akun @belajar.id (atau Workspace lainnya), kebijakan sekolah memblokir akses publik. Aplikasi ini TIDAK BISA terhubung. Anda WAJIB MENGGUNAKAN AKUN GMAIL PRIBADI (@gmail.com) dan membuat Spreadsheet baru di sana.";
 
           newSteps[3].status = "failed";
-          newSteps[3].message = "Terjadi pengalihan login akun Google (Akses Ditolak).";
-          newSteps[3].recommendation = "PENTING: Di Google Apps Script, klik tombol 'Deploy' (Terapkan) -> 'New Deployment'. Pilih tipe 'Web App'. Pada bagian 'Who has access' (Siapa yang memiliki akses), ANDA WAJIB MEMILIH 'Anyone' (Siapa saja). JANGAN pilih 'Only myself' atau 'Anyone with Google Account'.";
+          newSteps[3].message = "Opsi 'Anyone' Diblokir oleh Akun Anda.";
+          newSteps[3].recommendation = "SOLUSI SATU-SATUNYA: Silakan Logout, lalu Login ke Google menggunakan akun @gmail.com (pribadi). Buat Spreadsheet baru di sana, copy-paste ulang script-nya, lalu Deploy Web App baru.";
 
           newSteps[4].status = "failed";
-          newSteps[4].message = "Gagal memproses data spreadsheet.";
-          newSteps[4].recommendation = "Harap selesaikan izin akses publik di atas. Salin ulang URL Web App yang berakhiran '/exec' lalu simpan di menu Pengaturan.";
+          newSteps[4].message = "Sistem meminta login @belajar.id secara paksa.";
+          newSteps[4].recommendation = "Segera buat menggunakan email GMAIL PRIBADI. Salin URL Web App yang baru (berakhiran '/exec') dan simpan di menu Pengaturan.";
         } else if (errorMsg.includes("Timeout") || errorMsg.includes("timeout")) {
           newSteps[2].status = "failed";
           newSteps[2].message = "Batas waktu request (Timeout) terlampaui.";
