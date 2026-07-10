@@ -3,7 +3,7 @@ import {
   Settings, Image, Save, Trash2, ShieldAlert, CheckCircle, RefreshCw, Link, Database, AlertCircle
 } from "lucide-react";
 import { Setting } from "../types";
-import { getSheetsUrl, saveSheetsUrl } from "../lib/sheets";
+import { getSheetsUrl, saveSheetsUrl, getData } from "../lib/sheets";
 
 interface PengaturanViewProps {
   settings: Setting;
@@ -152,10 +152,9 @@ export default function PengaturanView({ settings, setSettings, onWipeData }: Pe
       // First save the current URL in input
       await saveSheetsUrl(sheetsUrl);
       
-      const response = await fetch("/api/sheets?key=settings");
-      const data = await response.json();
+      const data = await getData("settings");
       
-      if (response.ok && data && !data.error) {
+      if (data && !data.error) {
         setTestStatus({
           success: true,
           message: "Koneksi berhasil! Google Sheets terhubung secara real-time dan sinkron."
@@ -163,7 +162,7 @@ export default function PengaturanView({ settings, setSettings, onWipeData }: Pe
       } else {
         setTestStatus({
           success: false,
-          message: data.error || "Gagal menghubungkan. Pastikan URL Web App Anda benar dan dideploy sebagai 'Anyone' (Siapa saja)."
+          message: data?.error || "Gagal menghubungkan. Pastikan URL Web App Anda benar dan dideploy sebagai 'Anyone' (Siapa saja)."
         });
       }
     } catch (err: any) {
